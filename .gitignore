@@ -1,3 +1,4 @@
 node_modules
 .vscode
 *_templ.go
+/tmp/
