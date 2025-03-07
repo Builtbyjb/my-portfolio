@@ -1,77 +1,66 @@
-// Mobile Menu Toggle
-const mobileMenuButton = document.getElementById("mobile-menu-button");
-const mobileMenu = document.getElementById("mobile-menu");
+// DOM Elements
+const themeToggle = document.getElementById("theme-toggle");
+const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+const navLinks = document.querySelector(".nav-links");
+const filterBtns = document.querySelectorAll(".filter-btn");
+const projectsGrid = document.getElementById("projects-grid");
+const projectCards = document.querySelectorAll(".project-card");
+const contactForm = document.getElementById("contact-form");
 
-mobileMenuButton.addEventListener("click", () => {
-	mobileMenu.classList.toggle("hidden");
+// Theme Toggle
+themeToggle.addEventListener("click", () => {
+	document.body.classList.toggle("dark-mode");
+	themeToggle.textContent = document.body.classList.contains("dark-mode")
+		? "☀️"
+		: "🌙";
+});
+
+// Mobile Menu Toggle
+mobileMenuBtn.addEventListener("click", () => {
+	navLinks.classList.toggle("active");
+	mobileMenuBtn.textContent = navLinks.classList.contains("active")
+		? "✕"
+		: "☰";
 });
 
 // Close mobile menu when clicking a link
-const mobileLinks = mobileMenu.querySelectorAll("a");
-mobileLinks.forEach((link) => {
+document.querySelectorAll(".nav-links a").forEach((link) => {
 	link.addEventListener("click", () => {
-		mobileMenu.classList.add("hidden");
+		navLinks.classList.remove("active");
+		mobileMenuBtn.textContent = "☰";
 	});
 });
 
-// Dark Mode Toggle
-const themeToggle = document.getElementById("theme-toggle");
+// Smooth scrolling for navigation links
+document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+	anchor.addEventListener("click", function (e) {
+		e.preventDefault();
+		const targetId = this.getAttribute("href");
+		const targetElement = document.querySelector(targetId);
 
-// Check for saved theme preference or use the system preference
-if (
-	localStorage.getItem("theme") === "dark" ||
-	(!localStorage.getItem("theme") &&
-		window.matchMedia("(prefers-color-scheme: dark)").matches)
-) {
-	document.documentElement.classList.add("dark");
-} else {
-	document.documentElement.classList.remove("dark");
-}
-
-// Toggle theme on button click
-themeToggle.addEventListener("click", () => {
-	document.documentElement.classList.toggle("dark");
-
-	// Save preference to localStorage
-	if (document.documentElement.classList.contains("dark")) {
-		localStorage.setItem("theme", "dark");
-	} else {
-		localStorage.setItem("theme", "light");
-	}
+		if (targetElement) {
+			window.scrollTo({
+				top: targetElement.offsetTop - 80,
+				behavior: "smooth",
+			});
+		}
+	});
 });
 
 // Project Filtering
-const filterButtons = document.querySelectorAll(".project-filter-btn");
-const projectCards = document.querySelectorAll(".project-card");
-
-filterButtons.forEach((button) => {
-	button.addEventListener("click", () => {
+filterBtns.forEach((btn) => {
+	btn.addEventListener("click", () => {
 		// Remove active class from all buttons
-		filterButtons.forEach((btn) =>
-			btn.classList.remove(
-				"active",
-				"bg-primary-50",
-				"text-primary-600",
-				"dark:bg-gray-700",
-				"dark:text-primary-400"
-			)
-		);
-
+		filterBtns.forEach((b) => b.classList.remove("active"));
 		// Add active class to clicked button
-		button.classList.add(
-			"active",
-			"bg-primary-50",
-			"text-primary-600",
-			"dark:bg-gray-700",
-			"dark:text-primary-400"
-		);
+		btn.classList.add("active");
 
-		const filter = button.getAttribute("data-filter");
+		const filterValue = btn.getAttribute("data-filter");
 
 		projectCards.forEach((card) => {
 			if (
-				filter === "all" ||
-				card.getAttribute("data-category") === filter
+				filterValue === "all" ||
+				card.getAttribute("data-category") === filterValue
 			) {
 				card.style.display = "block";
 			} else {
@@ -81,37 +70,85 @@ filterButtons.forEach((button) => {
 	});
 });
 
-// Contact Form Handling
-const contactForm = document.getElementById("contact-form");
-const formSuccess = document.getElementById("form-success");
-
+// Form Submission
 contactForm.addEventListener("submit", (e) => {
 	e.preventDefault();
 
-	// In a real application, you would send the form data to a server here
-	// For this example, we'll just show the success message
-	formSuccess.classList.remove("hidden");
-	contactForm.reset();
+	// Get form values
+	const name = document.getElementById("name").value;
+	const email = document.getElementById("email").value;
+	const subject = document.getElementById("subject").value;
+	const message = document.getElementById("message").value;
 
-	// Hide success message after 5 seconds
-	setTimeout(() => {
-		formSuccess.classList.add("hidden");
-	}, 5000);
+	// In a real application, you would send this data to a server
+	console.log("Form submitted:", {
+		name,
+		email,
+		subject,
+		message,
+	});
+
+	// Show success message
+	alert("Thank you for your message! I will get back to you soon.");
+
+	// Reset form
+	contactForm.reset();
 });
 
-// Smooth scrolling for anchor links
-document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-	anchor.addEventListener("click", function (e) {
-		e.preventDefault();
+// Active navigation link based on scroll position
+window.addEventListener("scroll", () => {
+	const scrollPosition = window.scrollY;
 
-		const targetId = this.getAttribute("href");
-		const targetElement = document.querySelector(targetId);
+	// Get all sections
+	const sections = document.querySelectorAll("section");
 
-		if (targetElement) {
-			window.scrollTo({
-				top: targetElement.offsetTop - 80, // Offset for fixed header
-				behavior: "smooth",
+	sections.forEach((section) => {
+		const sectionTop = section.offsetTop - 100;
+		const sectionHeight = section.offsetHeight;
+		const sectionId = section.getAttribute("id");
+
+		if (
+			scrollPosition >= sectionTop &&
+			scrollPosition < sectionTop + sectionHeight
+		) {
+			document.querySelectorAll(".nav-links a").forEach((link) => {
+				link.classList.remove("active");
+				if (link.getAttribute("href") === `#${sectionId}`) {
+					link.classList.add("active");
+				}
 			});
 		}
 	});
 });
+
+// Animate elements on scroll
+function animateOnScroll() {
+	const elements = document.querySelectorAll(
+		".about-content, .about-image, .project-card, .contact-info, .contact-form"
+	);
+
+	elements.forEach((element) => {
+		const elementPosition = element.getBoundingClientRect().top;
+		const screenPosition = window.innerHeight / 1.3;
+
+		if (elementPosition < screenPosition) {
+			element.style.opacity = "1";
+			element.style.transform = "translateY(0)";
+		}
+	});
+}
+
+// Set initial styles for animation
+document
+	.querySelectorAll(
+		".about-content, .about-image, .project-card, .contact-info, .contact-form"
+	)
+	.forEach((element) => {
+		element.style.opacity = "0";
+		element.style.transform = "translateY(20px)";
+		element.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+	});
+
+// Call animation function on load and scroll
+window.addEventListener("load", animateOnScroll);
+window.addEventListener("scroll", animateOnScroll);
